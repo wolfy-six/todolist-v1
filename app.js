@@ -3,36 +3,69 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
+const date = require(__dirname+"/date.js");
 
 app.set('view engine', 'ejs');
-app.use(bodyParser.urlencoded({extended:true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-var itemCollection=["Buys Food","Cook Food"];
+const itemCollection = ["Buys Food", "Cook Food"];
+const workItems = [];
+const schoolItems = [];
 
 app.get("/", function (req, res) {
-    var today = new Date();
-    var option = {
-        weekday: "long",
-        day: "numeric",
-        month: "long"
-    };
-
-    var day = today.toLocaleDateString("en-US", option);
+    let day =  date.getDate();
 
     res.render("list", {
-        kindOfDay: day,
-        newListItems:itemCollection
+        listTitle: day,
+        newListItems: itemCollection
     })
 });
 
 
-app.post("/",function(req,res){
+app.post("/", function (req, res) {
     var item = req.body.newItem;
 
-    itemCollection.push(item);
-    res.redirect("/");
+    if (req.body.list === "Work List") {
+        workItems.push(item);
+        res.redirect("/work")
+
+    } else if (req.body.list === "School List") {
+        schoolItems.push(item);
+        res.redirect("/school")
+
+    } else {
+        itemCollection.push(item);
+        res.redirect("/");
+    }
 })
+
+
+//work rout
+
+app.get("/work", function (req, res) {
+    res.render("list", {
+        listTitle: "Work List",
+        newListItems: workItems
+    })
+});
+
+
+//school
+
+app.get("/school", function (req, res) {
+    res.render("list", {
+        listTitle: "School List",
+        newListItems: schoolItems
+    })
+})
+
+
+//about page
+
+app.get("/about",function(req,res){
+    res.render("about");
+});
 
 
 app.listen(3000, function () {
